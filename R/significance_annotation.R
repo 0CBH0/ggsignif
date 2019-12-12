@@ -42,7 +42,7 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
                     }
                     return(params)
                   },
-                  compute_group = function(data, scales, comparisons, test, test.args, complete_data,
+                  compute_group = function(data, scales, comparisons, test, test.args, p.prep, complete_data,
                                            annotations, map_signif_level, y_position, xmax, xmin,
                                            margin_top, step_increase, tip_length, manual) {
 
@@ -217,7 +217,7 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
 #' @export
 stat_signif <- function(mapping = NULL, data = NULL,
                     position = "identity", na.rm = FALSE, show.legend = NA,
-                    inherit.aes = TRUE, comparisons=NULL, test="wilcox.test", test.args=NULL,
+                    inherit.aes = TRUE, comparisons=NULL, test="wilcox.test", test.args=NULL, p.prep=NULL,
                     annotations=NULL, map_signif_level=FALSE,y_position=NULL,xmin=NULL, xmax=NULL,
                     margin_top=0.05, step_increase=0, tip_length=0.03,
                     size=0.5, textsize = 3.88, family="", vjust = 0,
@@ -234,7 +234,7 @@ stat_signif <- function(mapping = NULL, data = NULL,
   ggplot2::layer(
     stat = StatSignif, data = data, mapping = mapping, geom = "signif",
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(comparisons=comparisons, test=test, test.args=test.args,
+    params = list(comparisons=comparisons, test=test, test.args=test.args, p.prep=p.prep,
                   annotations=annotations, map_signif_level=map_signif_level,
                   y_position=y_position,xmin=xmin, xmax=xmax,
                   margin_top=margin_top, step_increase=step_increase,
@@ -290,7 +290,7 @@ GeomSignif <- ggplot2::ggproto("GeomSignif", ggplot2::Geom,
 #' @export
 geom_signif <- function(mapping = NULL, data = NULL, stat = "signif",
                         position = "identity", na.rm = FALSE, show.legend = NA,
-                        inherit.aes = TRUE, comparisons=NULL, test="wilcox.test", test.args=NULL,
+                        inherit.aes = TRUE, comparisons=NULL, test="wilcox.test", test.args=NULL, p.prep=NULL,
                         annotations=NULL, map_signif_level=FALSE,y_position=NULL,xmin=NULL, xmax=NULL,
                         margin_top=0.05, step_increase=0, tip_length=0.03,
                         size=0.5, textsize = 3.88, family="", vjust = 0,
@@ -321,7 +321,7 @@ geom_signif <- function(mapping = NULL, data = NULL, stat = "signif",
         stop("If manual mode is selected you need to provide the data and mapping parameters")
       }
     }
-    params <- c(params, list(comparisons=comparisons, test=test, test.args=test.args,
+    params <- c(params, list(comparisons=comparisons, test=test, test.args=test.args, p.prep=p.prep,
                    annotations=annotations, map_signif_level=map_signif_level,
                    y_position=y_position,xmin=xmin, xmax=xmax,
                    margin_top=margin_top, step_increase=step_increase,
