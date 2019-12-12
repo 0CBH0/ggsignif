@@ -93,8 +93,8 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
                             group_1 <- complete_data$y[complete_data$x == scales$x$map(comp[1]) & complete_data$PANEL == data$PANEL[1]]
                             group_2 <- complete_data$y[complete_data$x == scales$x$map(comp[2]) & complete_data$PANEL == data$PANEL[1]]
                             p_value <- p.adjust(do.call(test, c(list(group_1, group_2), test.args))$p.value, n=pan)
-                            if(! is.null(test.args)) p_value <- test.args[i]
-                            print(p_value)
+                            if(! is.null(p.prep)) p_value <- p.prep[i]
+                            print(paste(comp[1], " - ", comp[2], ": ", p_value, sep=""))
                             if(is.numeric(map_signif_level)){
                               temp_value <- names(which.min(map_signif_level[which(map_signif_level > p_value)]))
                               if(is.null(temp_value)){
