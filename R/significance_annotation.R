@@ -66,6 +66,24 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
                     }
 
                     if(! is.null(comparisons)){
+                      y_scale_range <- (scales$y$range$range[2] - scales$y$range$range[1])
+                      group_term <- unlist(comparisons)
+                      group_term <- group_term[order(group_term)]
+                      group_names <- union(group_term, group_term)
+                      pan <- max(1, (length(group_names)*(length(group_names)-1)/2))
+                      yend_group <- list(c(0))
+                      for(i in 1:length(group_names)){
+                        t <- length(which(group_term == group_names[i]))
+                        b <- max(complete_data$y[complete_data$x == scales$x$map(group_names[i]) & complete_data$PANEL == data$PANEL[1]])
+                        yend_group <- c(yend_group, list(c(b+((1:t)+1)*y_scale_range/16)))
+                      }
+                      yend_group <- yend_group[-1]
+                      yend_count <- rep(1, length(group_names))
+                      for(i in 1:length(comparisons)){
+                        comparisons[[i]] <- c(comparisons[[i]], yend_group[[comparisons[[i]][1]]][yend_count[comparisons[[i]][1]]], yend_group[[comparisons[[i]][2]]][yend_count[comparisons[[i]][2]]])
+                        yend_count[comparisons[[i]][1]] <- yend_count[comparisons[[i]][1]]+1
+                        yend_count[comparisons[[i]][2]] <- yend_count[comparisons[[i]][2]]+1
+                      }
                       i <- 0
                       result <- lapply(comparisons, function(comp){
                         i <<- i + 1
@@ -74,7 +92,7 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
                           test_result <- if(is.null(annotations)){
                             group_1 <- complete_data$y[complete_data$x == scales$x$map(comp[1]) & complete_data$PANEL == data$PANEL[1]]
                             group_2 <- complete_data$y[complete_data$x == scales$x$map(comp[2]) & complete_data$PANEL == data$PANEL[1]]
-                            p_value <- do.call(test, c(list(group_1, group_2), test.args))$p.value
+                            p_value <- p.adjust(do.call(test, c(list(group_1, group_2), test.args))$p.value, n=pan)
                             if(is.numeric(map_signif_level)){
                               temp_value <- names(which.min(map_signif_level[which(map_signif_level > p_value)]))
                               if(is.null(temp_value)){
@@ -100,15 +118,19 @@ StatSignif <- ggplot2::ggproto("StatSignif", ggplot2::Stat,
                             annotations[i]
                           }
                           y_scale_range <- (scales$y$range$range[2] - scales$y$range$range[1])
+                          yend_pos <- c(comp[3], comp[4])
                           if(is.null(y_position)){
-                            y_pos <- scales$y$range$range[2] + y_scale_range * margin_top[i] + y_scale_range * step_increase[i] * (i-1)
+                            #y_pos <- scales$y$range$range[2] + y_scale_range * margin_top[i] + y_scale_range * step_increase[i] * (i-1)
+                            y_pos <- max(yend_pos)
                           }else{
                             y_pos <- y_position[i] + y_scale_range * margin_top[i] + y_scale_range * step_increase[i] * (i-1)
                           }
+                          if(comp[1] > comp[2]) yend_pos <- rev(yend_pos)
+                          #+y_scale_range*tip_length[(i-1)*2+1]
                           data.frame(x=c(min(comp[1],comp[2]),min(comp[1],comp[2]),max(comp[1],comp[2])),
                                      xend=c(min(comp[1],comp[2]),max(comp[1],comp[2]),max(comp[1],comp[2])),
-                                     y=c(y_pos - y_scale_range*tip_length[(i-1)*2+1], y_pos, y_pos),
-                                     yend=c(y_pos, y_pos, y_pos-y_scale_range*tip_length[(i-1)*2+2]),
+                                     y=c(yend_pos[1]-y_scale_range/24, y_pos, y_pos),
+                                     yend=c(y_pos, y_pos, yend_pos[2]-y_scale_range/24),
                                      annotation=test_result, group=paste(c(comp, i), collapse = "-"))
                         }
                       })
